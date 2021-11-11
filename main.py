@@ -176,7 +176,7 @@ N.append(len(os.listdir(image_path + "/surgical")))
 N.append(len(os.listdir(image_path + "/without_mask")))
 
 def load_data(path):
-    reshape_size = torchvision.transforms.Resize((32,32))
+    reshape_size = torchvision.transforms.Resize((128,128))
     data_type = torchvision.transforms.ToTensor()
     normalized_metrics = torchvision.transforms.Normalize(
         (0.5, 0.5, 0.5), 
@@ -206,37 +206,94 @@ def test_dataloarder(dataset):
                       batch_size=500
                      )
 
+def imshow(image, ax=None, title=None, normalize=True):
+    """Imshow for Tensor."""
+    if ax is None:
+        fig, ax = plt.subplots()
+    image = image.numpy().transpose((1, 2, 0))
+
+    if normalize:
+        mean = np.array([0.5, 0.5, 0.5])
+        std = np.array([0.5, 0.5, 0.5])
+        image = std * image + mean
+        image = np.clip(image, 0, 1)
+
+    ax.imshow(image)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.tick_params(axis='both', length=0)
+    ax.set_xticklabels('')
+    ax.set_yticklabels('')
+
+    return ax
+
+def label_gen(d):
+    labels = ['Cloth', 'FFP2', 'Surgical',"Without_Mask"]
+    return labels[d]
+
 if __name__ == '__main__':
     dataset = load_data(image_path)
     plt.figure(figsize=(9, 3))
     plt.bar(names, N)
     plt.savefig('DatasetStat.png')
 
-    torch.manual_seed(42)
-    num_epochs = 20
-    k = 4
-    splits = KFold(n_splits = k, shuffle = True, random_state = 42)
-    kfold_acc = []
+    if os.path.isfile('./k_cross_CNN.pt'):
+        index = 6
+        tr_ds, te_ds = split_data(dataset)
+        tr_loader = train_dataloarder(tr_ds)
+        te_loader = test_dataloarder(te_ds)
+        model =  torch.load('./k_cross_CNN.pt')
+        print("Loading Successsful")
+        dataiter = iter(te_loader)
+        images, labels = dataiter.next()
+        
+        model_out = model(images[index].unsqueeze(0))
+        predicted_class = label_gen(model_out.argmax(dim=1).numpy()[0])
+        true_label = label_gen(labels[index].numpy())
+        print('Prediction: %s - Actual target: %s'%(predicted_class, true_label))
+        imshow(images[index], title = 'Prediction: %s - Actual target: %s'%(predicted_class, true_label))
+        plt.show()
+        """
+        for image, true_label in te_loader:
+            #print(image, true_label)
+            model_out = model(image)
+            print("MOdel: ", model_out.data[1], torch.utils.data.Subset(te_loader.dataset, range(0,500))[0][1])
+            imshow(image, normalize=False)
+            #print(np.argmax(torch.max(model_out.data,1)[1].numpy()))
+            #prediction = int(torch.max(model_out.data, 1)[1].numpy())
+            #print(prediction)
+            #plt.imshow(image)
+            #plt.title(f'Prediction: {predicted_class} - Actual target: {true_label}')
+            #plt.show()
+            break"""
+    else:
+        torch.manual_seed(42)
+        num_epochs = 30
+        k = 4
+        splits = KFold(n_splits = k, shuffle = True, random_state = 42)
+        kfold_acc = []
 
 
-    for fold, (train_id, val_id) in enumerate(splits.split(np.arange(len(dataset)))):
-        print("Fold {}".format(fold+1))
+        for fold, (train_id, val_id) in enumerate(splits.split(np.arange(len(dataset)))):
+            print("Fold {}".format(fold+1))
 
-        tr_sampler = SubsetRandomSampler(train_id)
-        te_sampler = SubsetRandomSampler(val_id)
-        tr_loader = train_dataloarder(dataset)
-        te_loader = test_dataloarder(dataset)
+            tr_sampler = SubsetRandomSampler(train_id)
+            te_sampler = SubsetRandomSampler(val_id)
+            #tr_loader = train_dataloarder(dataset)
+            #te_loader = test_dataloarder(dataset)
 # =============================================================================
-#         tr_loader = DataLoader(dataset, batch_size = 4, sampler = tr_sampler)
-#         te_loader = DataLoader(dataset, batch_size = 128, sampler = te_sampler)
+            tr_loader = DataLoader(dataset, num_workers=2, shuffle=True, batch_size = 4, sampler = tr_sampler)
+            te_loader = DataLoader(dataset, num_workers = 2, shuffle = True, batch_size = 500, sampler = te_sampler)
 # =============================================================================
 
         
-        model_obj = ModelTrainer()
-        model_obj.training_loop(tr_loader, num_epochs)
-        testdata_accuracy = model_obj.validate(te_loader, True)
-        kfold_acc.append(testdata_accuracy)
-        print("Model accuracy for test dataset on Fold %d: %d"%(fold+1, testdata_accuracy))
+            model_obj = ModelTrainer()
+            model_obj.training_loop(tr_loader, num_epochs)
+            testdata_accuracy = model_obj.validate(te_loader, True)
+            kfold_acc.append(testdata_accuracy)
+            print("Model accuracy for test dataset on Fold %d: %d"%(fold+1, testdata_accuracy))
 
-    print("Average Model Accuracy is: ",np.mean(kfold_acc))
-    torch.save(model_obj.model, "k_cross_CNN.pt")
+        print("Average Model Accuracy is: ",np.mean(kfold_acc))
+        torch.save(model_obj.model, "k_cross_CNN.pt")
