@@ -120,51 +120,18 @@ def loadImages(path):
     image_files = sorted([os.path.join(path, 'cloth', file)
                           for file in os.listdir(path + "/cloth")
                           if file.endswith('.jpg')])
-   
-    image_files += sorted([os.path.join(path, 'cloth', file)
-                          for file in os.listdir(path + "/cloth")
-                          if file.endswith('.PNG')])
-    
-    image_files += sorted([os.path.join(path, 'cloth', file)
-                          for file in os.listdir(path + "/cloth")
-                          if file.endswith('.jpeg')])
-    
+
     image_files += sorted([os.path.join(path, 'ffp2', file)
                           for file in os.listdir(path + "/ffp2")
                           if file.endswith('.jpg')])
-    
-    image_files += sorted([os.path.join(path, 'ffp2', file)
-                          for file in os.listdir(path + "/ffp2")
-                          if file.endswith('.PNG')])
-    
-    image_files += sorted([os.path.join(path, 'ffp2', file)
-                          for file in os.listdir(path + "/ffp2")
-                          if file.endswith('.jpeg')])
-    
+
     image_files += sorted([os.path.join(path, 'surgical', file)
                           for file in os.listdir(path + "/surgical")
                           if file.endswith('.jpg')])
-    
-    image_files += sorted([os.path.join(path, 'surgical', file)
-                          for file in os.listdir(path + "/surgical")
-                          if file.endswith('.PNG')])
-    
-    image_files += sorted([os.path.join(path, 'surgical', file)
-                          for file in os.listdir(path + "/surgical")
-                          if file.endswith('.jpeg')])
-    
+
     image_files += sorted([os.path.join(path, 'without_mask', file)
                           for file in os.listdir(path + "/without_mask")
                           if file.endswith('.jpg')])
-    
-    image_files += sorted([os.path.join(path, 'without_mask', file)
-                          for file in os.listdir(path + "/without_mask")
-                          if file.endswith('.PNG')])
-    
-    image_files += sorted([os.path.join(path, 'without_mask', file)
-                          for file in os.listdir(path + "/without_mask")
-                          if file.endswith('.jpeg')])
-    
     return image_files
 
 
