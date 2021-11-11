@@ -94,7 +94,7 @@ class ModelTrainer:
                     sn.heatmap(df_cm, annot=True)
                     plt.xlabel("Predicted Values")
                     plt.ylabel("Actual Values")
-                    plt.show()
+                    plt.savefig('ConfusionMatrix.png')
                     print(metrics.classification_report(predicted, labels, target_names=['Cloth', 'FFP2', 'Surgical',"Without_Mask"]))
 
         acc_percent = (correct / total) * 100    
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     dataset = load_data(image_path)
     plt.figure(figsize=(9, 3))
     plt.bar(names, N)
-    plt.show()
+    plt.savefig('DatasetStat.png')
 
     torch.manual_seed(42)
     num_epochs = 20
