@@ -51,7 +51,7 @@ class convolutional_neural_network(nn.Module):
 
         self.complete_connected_layer = nn.Sequential(
             nn.Dropout(p=0.1),
-            nn.Linear(64 * 32, 1000),
+            nn.Linear(32768, 1000),
             nn.ReLU(inplace=True),
             nn.Linear(1000, 512),
             nn.ReLU(inplace=True),
@@ -217,6 +217,7 @@ def imshow(image, ax=None, title=None, normalize=True):
         std = np.array([0.5, 0.5, 0.5])
         image = std * image + mean
         image = np.clip(image, 0, 1)
+    
 
     ax.imshow(image)
     ax.spines['top'].set_visible(False)
@@ -269,6 +270,7 @@ if __name__ == '__main__':
             #plt.show()
             break"""
     else:
+        print("Saved Model not found. Training a new one")
         torch.manual_seed(42)
         num_epochs = 30
         k = 4
@@ -284,8 +286,8 @@ if __name__ == '__main__':
             #tr_loader = train_dataloarder(dataset)
             #te_loader = test_dataloarder(dataset)
 # =============================================================================
-            tr_loader = DataLoader(dataset, num_workers=2, shuffle=True, batch_size = 4, sampler = tr_sampler)
-            te_loader = DataLoader(dataset, num_workers = 2, shuffle = True, batch_size = 500, sampler = te_sampler)
+            tr_loader = DataLoader(dataset, num_workers=2, batch_size = 4, sampler = tr_sampler)
+            te_loader = DataLoader(dataset, num_workers = 2, batch_size = 500, sampler = te_sampler)
 # =============================================================================
 
         
