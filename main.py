@@ -16,6 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as functional
 import torch.optim as optim
 import warnings
+from torchsummary import summary
 from random import randint
 warnings.filterwarnings('ignore')
 
@@ -249,6 +250,7 @@ if __name__ == '__main__':
                       batch_size=4
                      )
         model =  torch.load('./k_cross_CNN.pt')
+        print(model)
         print("Loading Successsful")
         dataiter = iter(img_loader)
         images, labels = dataiter.next()
