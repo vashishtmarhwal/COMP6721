@@ -16,6 +16,7 @@ import torch.nn as nn
 import torch.nn.functional as functional
 import torch.optim as optim
 import warnings
+from random import randint
 warnings.filterwarnings('ignore')
 
 image_path = "./FinalDataset"
@@ -134,7 +135,6 @@ def loadImages(path):
                           if file.endswith('.jpg')])
     return image_files
 
-
 names = ['Cloth', 'FFP2', 'Surgical',"Without_Mask"]
 N = []
 N.append(len(os.listdir(image_path + "/cloth")))
@@ -208,13 +208,17 @@ if __name__ == '__main__':
     plt.savefig('DatasetStat.png')
 
     if os.path.isfile('./k_cross_CNN.pt'):
-        index = 6
-        tr_ds, te_ds = split_data(dataset)
-        tr_loader = train_dataloarder(tr_ds)
-        te_loader = test_dataloarder(te_ds)
+        index = randint(0,3)
+        test_img_path = "./testImage"
+        dataset = load_data(test_img_path)
+        img_loader = DataLoader(dataset=dataset, 
+                      num_workers=2, 
+                      shuffle=True,
+                      batch_size=4
+                     )
         model =  torch.load('./k_cross_CNN.pt')
         print("Loading Successsful")
-        dataiter = iter(te_loader)
+        dataiter = iter(img_loader)
         images, labels = dataiter.next()
         
         model_out = model(images[index].unsqueeze(0))
@@ -223,19 +227,6 @@ if __name__ == '__main__':
         print('Prediction: %s - Actual target: %s'%(predicted_class, true_label))
         imshow(images[index], title = 'Prediction: %s - Actual target: %s'%(predicted_class, true_label))
         plt.show()
-        """
-        for image, true_label in te_loader:
-            #print(image, true_label)
-            model_out = model(image)
-            print("MOdel: ", model_out.data[1], torch.utils.data.Subset(te_loader.dataset, range(0,500))[0][1])
-            imshow(image, normalize=False)
-            #print(np.argmax(torch.max(model_out.data,1)[1].numpy()))
-            #prediction = int(torch.max(model_out.data, 1)[1].numpy())
-            #print(prediction)
-            #plt.imshow(image)
-            #plt.title(f'Prediction: {predicted_class} - Actual target: {true_label}')
-            #plt.show()
-            break"""
     else:
         print("Saved Model not found. Training a new one")
         torch.manual_seed(42)
@@ -250,13 +241,8 @@ if __name__ == '__main__':
 
             tr_sampler = SubsetRandomSampler(train_id)
             te_sampler = SubsetRandomSampler(val_id)
-            #tr_loader = train_dataloarder(dataset)
-            #te_loader = test_dataloarder(dataset)
-# =============================================================================
             tr_loader = DataLoader(dataset, num_workers=2, batch_size = 4, sampler = tr_sampler)
             te_loader = DataLoader(dataset, num_workers = 2, batch_size = 500, sampler = te_sampler)
-# =============================================================================
-
         
             model_obj = ModelTrainer()
             model_obj.training_loop(tr_loader, num_epochs)
