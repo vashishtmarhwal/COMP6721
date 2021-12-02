@@ -261,7 +261,8 @@ def predictSingle():
         print("No model found")
 
 def trainNew():
-    print("Saved Model not found. Training a new one")
+    dataset = load_data(image_path)
+    print("Training a new one")
     torch.manual_seed(42)
     num_epochs = 30
     k = 4
@@ -375,6 +376,7 @@ if __name__ == '__main__':
     plt.bar(names, N)
     plt.savefig('DatasetStat.png')
 
+    #Send dataset to function
 
     print("""
     1. Bias Tracking 
