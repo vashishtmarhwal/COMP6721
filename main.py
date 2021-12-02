@@ -61,7 +61,7 @@ class convolutional_neural_network(nn.Module):
             nn.Linear(512, 128),
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.1),
-            nn.Linear(128, 5)
+            nn.Linear(128, 4)
         )
 
     def forward(self, data):
@@ -115,6 +115,7 @@ class ModelTrainer:
                 self.optimizer.step()
             print("Epoch {} accuracy: {:.3f}".format(epoch , self.validate(loader, False)))
         return 
+
 
 def loadImages(path):
     '''Put files into lists and return them as one list with all images 
@@ -192,14 +193,14 @@ def split_data(dataset):
                                       )
     return train_d, test_d
 
-def train_dataloarder(dataset):
+def train_dataloader(dataset):
     return DataLoader(dataset=dataset, 
                       num_workers=2, 
                       shuffle=True,
                       batch_size=4
                      )
 
-def test_dataloarder(dataset):
+def test_dataloader(dataset):
     return DataLoader(dataset=dataset,
                       num_workers=2, 
                       shuffle=True,
@@ -234,12 +235,7 @@ def label_gen(d):
     labels = ['Cloth', 'FFP2', 'Surgical',"Without_Mask"]
     return labels[d]
 
-if __name__ == '__main__':
-    dataset = load_data(image_path)
-    plt.figure(figsize=(9, 3))
-    plt.bar(names, N)
-    plt.savefig('DatasetStat.png')
-
+def predictSingle():
     if os.path.isfile('./k_cross_CNN.pt'):
         index = randint(0,3)
         test_img_path = "./testImage"
@@ -262,27 +258,131 @@ if __name__ == '__main__':
         imshow(images[index], title = 'Prediction: %s - Actual target: %s'%(predicted_class, true_label))
         plt.show()
     else:
-        print("Saved Model not found. Training a new one")
-        torch.manual_seed(42)
-        num_epochs = 30
-        k = 4
-        splits = KFold(n_splits = k, shuffle = True, random_state = 42)
-        kfold_acc = []
+        print("No model found")
+
+def trainNew():
+    print("Saved Model not found. Training a new one")
+    torch.manual_seed(42)
+    num_epochs = 30
+    k = 4
+    splits = KFold(n_splits = k, shuffle = True, random_state = 42)
+    kfold_acc = []
 
 
-        for fold, (train_id, val_id) in enumerate(splits.split(np.arange(len(dataset)))):
-            print("Fold {}".format(fold+1))
+    for fold, (train_id, val_id) in enumerate(splits.split(np.arange(len(dataset)))):
+        print("Fold {}".format(fold+1))
 
-            tr_sampler = SubsetRandomSampler(train_id)
-            te_sampler = SubsetRandomSampler(val_id)
-            tr_loader = DataLoader(dataset, num_workers=2, batch_size = 4, sampler = tr_sampler)
-            te_loader = DataLoader(dataset, num_workers = 2, batch_size = 500, sampler = te_sampler)
-        
-            model_obj = ModelTrainer()
-            model_obj.training_loop(tr_loader, num_epochs)
-            testdata_accuracy = model_obj.validate(te_loader, True)
-            kfold_acc.append(testdata_accuracy)
-            print("Model accuracy for test dataset on Fold %d: %d"%(fold+1, testdata_accuracy))
+        tr_sampler = SubsetRandomSampler(train_id)
+        te_sampler = SubsetRandomSampler(val_id)
+        tr_loader = DataLoader(dataset, num_workers=2, batch_size = 4, sampler = tr_sampler)
+        te_loader = DataLoader(dataset, num_workers = 2, batch_size = 500, sampler = te_sampler)
+    
+        model_obj = ModelTrainer()
+        model_obj.training_loop(tr_loader, num_epochs)
+        testdata_accuracy = model_obj.validate(te_loader, True)
+        kfold_acc.append(testdata_accuracy)
+        print("Model accuracy for test dataset on Fold %d: %d"%(fold+1, testdata_accuracy))
 
-        print("Average Model Accuracy is: ",np.mean(kfold_acc))
-        torch.save(model_obj.model, "k_cross_CNN.pt")
+    print("Average Model Accuracy is: ",np.mean(kfold_acc))
+    torch.save(model_obj.model, "k_cross_CNN.pt")
+
+
+def validate_bias(model, loader, type, metric_flag=1):
+    model.eval()
+    correct = 0
+    total = 0
+    acc_percent = 0
+    with torch.no_grad():
+        for imgs, labels in loader:
+            outputs = model(imgs)
+            predicted = (torch.max(outputs, dim=1)[1]).numpy()
+            total += labels.shape[0]
+            correct += int((predicted == labels.numpy()).sum())
+            if metric_flag:
+                print(metrics.confusion_matrix(predicted, labels))
+                cm_array = metrics.confusion_matrix(predicted, labels)
+                df_cm = pd.DataFrame(cm_array, index = [i for i in ['Cloth', 'FFP2', 'Surgical',"Without_Mask"]], columns = [i for i in ['Cloth', 'FFP2', 'Surgical',"Without_Mask"]])
+                plt.figure(figsize = (10,7))
+                sn.heatmap(df_cm, annot=True)
+                plt.xlabel("Predicted Values")
+                plt.ylabel("Actual Values")
+                plt.savefig('ConfusionMatrix'+type+'.png')
+                print(metrics.classification_report(predicted, labels, target_names=['Cloth', 'FFP2', 'Surgical',"Without_Mask"]))
+
+    acc_percent = (correct / total) * 100
+    return acc_percent
+
+
+def biasTest():
+    model =  torch.load('./k_cross_CNN.pt')
+    print("""
+    Type of Bias to test:
+    1. Gender
+    2. Race
+    """)
+    biastype = int(input())
+    if biastype == 1:
+        data = "./bias_dataset/gender"
+        ##For Male
+        path_male = data + "/male"
+        dataset = load_data(path_male)
+        train_b, test_b = split_data(dataset)
+        test_loader_bias = test_dataloader(test_b)
+        acc = validate_bias(model, test_loader_bias, "male")
+        print("Accuracy for Test Data containing only Males - ", acc)
+        ##For Female
+        path_female = data + "/female"
+        dataset = load_data(path_female)
+        train_b, test_b = split_data(dataset)
+        test_loader_bias = test_dataloader(test_b)
+        acc = validate_bias(model, test_loader_bias, "female")
+        print("Accuracy for Test Data containing only Females - ", acc)
+    else:
+        data = "./bias_dataset/race"
+        ##For Eastern
+        path_male = data + "/east"
+        dataset = load_data(path_male)
+        train_b, test_b = split_data(dataset)
+        test_loader_bias = test_dataloader(test_b)
+        acc = validate_bias(model, test_loader_bias, "east")
+        print("Accuracy for Test Data containing only Eastern - ", acc)
+        ##For Western
+        path_female = data + "/west"
+        dataset = load_data(path_female)
+        train_b, test_b = split_data(dataset)
+        test_loader_bias = test_dataloader(test_b)
+        acc = validate_bias(model, test_loader_bias, "west")
+        print("Accuracy for Test Data containing only Western - ", acc)
+
+
+
+
+
+def userInput(x):
+    if x == 1:
+        biasTest()
+    if x == 2:
+        print("Predicting Single")
+        predictSingle()
+    if x == 3:
+        trainNew()
+    if x == 4:
+        return -1
+
+if __name__ == '__main__':
+    dataset = load_data(image_path)
+    plt.figure(figsize=(9, 3))
+    plt.bar(names, N)
+    plt.savefig('DatasetStat.png')
+
+
+    print("""
+    1. Bias Tracking 
+    2. Predict for Single Image
+    3. Train New Model
+    4. Exit
+    """)
+    userIn = int(input())
+    print(userIn)
+    userInput(userIn)
+
