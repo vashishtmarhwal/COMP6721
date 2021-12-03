@@ -12,11 +12,11 @@ from torch.utils.data import DataLoader, SubsetRandomSampler, random_split
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedShuffleSplit
 import torch.nn as nn
 import torch.nn.functional as functional
 import torch.optim as optim
 import warnings
-from torchsummary import summary
 from random import randint
 warnings.filterwarnings('ignore')
 
@@ -264,13 +264,13 @@ def trainNew():
     dataset = load_data(image_path)
     print("Training a new one")
     torch.manual_seed(42)
-    num_epochs = 30
-    k = 4
-    splits = KFold(n_splits = k, shuffle = True, random_state = 42)
+    num_epochs = 20
+    k = 10
+    #splits = KFold(n_splits = k, random_state = 42)
+    splits = StratifiedShuffleSplit(n_splits = k, test_size = 0.2, random_state = 42)
     kfold_acc = []
 
-
-    for fold, (train_id, val_id) in enumerate(splits.split(np.arange(len(dataset)))):
+    for fold, (train_id, val_id) in enumerate(splits.split(np.arange(len(dataset)), dataset.targets)):
         print("Fold {}".format(fold+1))
 
         tr_sampler = SubsetRandomSampler(train_id)
@@ -286,7 +286,6 @@ def trainNew():
 
     print("Average Model Accuracy is: ",np.mean(kfold_acc))
     torch.save(model_obj.model, "k_cross_CNN.pt")
-
 
 def validate_bias(model, loader, type, metric_flag=1):
     model.eval()
