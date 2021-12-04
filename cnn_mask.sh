@@ -17,44 +17,22 @@
 
 ##PUT YOUR MODULE LOADS HERE
 ## python 3.6, numpy 1.17.0, matplot.pyplot 3.3.4, cv2 4.5.4.58, seaborn 0.11.2, pandas 1.1.5, torch 1.10.0, torchvision 0.11.1, sklearn 0.22.1
-module load python/3.6.13/default
-module load numpy/1.17.0/default
-module load matplotlib/3.3.4/default
-module load opencv-python/4.5.4.58/default
-module load seaborn/0.11.1/default
-module load pandas/1.1.5/default
-module load torch/1.10.0/default
-module load torchvision/0.11.1/default
-module load sklearn/0.22.1/default
+module load python/3.5.1/default
+module load opencv/4.5.4/default
+module load pytorch/1.10.0/default
 
 ## Create a virtual Python environment (env) in $TMPDIR
 python3.6 -m venv $TMPDIR/env
 ## Activate the new environment
 source $TMPDIR/env/bin/activate.csh
 ## Install gurobipy module
-cd $NUMPY_HOME
-python3.6 setup.py build --build-base /tmp/${USER} install
-
-cd $MATPLOTLIB_HOME
-python3.6 setup.py build --build-base /tmp/${USER} install
 
 cd $OPENCV_HOME
 python3.6 setup.py build --build-base /tmp/${USER} install
 
-cd $SEABORN_HOME
+cd $PYTORCH_HOME
 python3.6 setup.py build --build-base /tmp/${USER} install
 
-cd $PANDAS_HOME
-python3.6 setup.py build --build-base /tmp/${USER} install
-
-cd $TORCH_HOME
-python3.6 setup.py build --build-base /tmp/${USER} install
-
-cd $TORCHVISION_HOME
-python3.6 setup.py build --build-base /tmp/${USER} install
-
-cd $SKLEARN_HOME
-python3.6 setup.py build --build-base /tmp/${USER} install
 
 ## return to workDir
 cd $vashCOMP6721
