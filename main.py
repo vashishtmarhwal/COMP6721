@@ -65,12 +65,15 @@ class convolutional_neural_network(nn.Module):
         )
 
         self.complete_connected_layer = nn.Sequential(
+            nn.Dropout(p=0.1),
             nn.Linear(16384, 1000),
             nn.ReLU(inplace=True),
             nn.Linear(1000, 512),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=0.1),
             nn.Linear(512, 128),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=0.1),
             nn.Linear(128, 4)
         )
 
@@ -84,7 +87,7 @@ class convolutional_neural_network(nn.Module):
 class ModelTrainer:
     def __init__(self):
         self.model = convolutional_neural_network()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.005)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
         self.loss_fn = nn.CrossEntropyLoss()
 
     def validate(self, loader, metric_flag):
