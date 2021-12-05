@@ -274,7 +274,7 @@ def trainNew():
     dataset = load_data(image_path)
     print("Training a new one")
     torch.manual_seed(42)
-    num_epochs 0
+    num_epochs = 30
     k = 10
     #splits = KFold(n_splits = k, random_state = 42)
     splits = StratifiedShuffleSplit(n_splits = k, test_size = 0.2, random_state = 42)
