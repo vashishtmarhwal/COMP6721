@@ -383,7 +383,7 @@ if __name__ == '__main__':
     3. Train New Model
     4. Exit
     """)
-    userIn = int(input())
-    print(userIn)
-    userInput(userIn)
+    #userIn = int(input())
+    #print(userIn)
+    userInput(sys.argv[1])
 
