@@ -18,6 +18,7 @@ import torch.nn.functional as functional
 import torch.optim as optim
 import warnings
 from random import randint
+import sys
 warnings.filterwarnings('ignore')
 
 image_path = "./FinalDataset"
@@ -383,7 +384,7 @@ if __name__ == '__main__':
     3. Train New Model
     4. Exit
     """)
-    #userIn = int(input())
-    #print(userIn)
-    userInput(sys.argv[1])
+    userIn = int(sys.argv[1])
+    print(userIn)
+    userInput(userIn)
 
