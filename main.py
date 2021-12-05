@@ -19,7 +19,10 @@ import torch.optim as optim
 import warnings
 from random import randint
 import sys
+from datetime import datetime
+
 warnings.filterwarnings('ignore')
+
 
 image_path = "./FinalDataset"
 
@@ -49,19 +52,25 @@ class convolutional_neural_network(nn.Module):
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
             nn.LeakyReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2)
+
         )
 
         self.complete_connected_layer = nn.Sequential(
-            nn.Dropout(p=0.1),
-            nn.Linear(32768, 1000),
+            nn.Linear(16384, 1000),
             nn.ReLU(inplace=True),
             nn.Linear(1000, 512),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.1),
             nn.Linear(512, 128),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.1),
             nn.Linear(128, 4)
         )
 
@@ -75,7 +84,7 @@ class convolutional_neural_network(nn.Module):
 class ModelTrainer:
     def __init__(self):
         self.model = convolutional_neural_network()
-        self.optimizer = optim.SGD(self.model.parameters(), lr=1e-2, momentum=0.8)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.005)
         self.loss_fn = nn.CrossEntropyLoss()
 
     def validate(self, loader, metric_flag):
@@ -265,7 +274,7 @@ def trainNew():
     dataset = load_data(image_path)
     print("Training a new one")
     torch.manual_seed(42)
-    num_epochs = 20
+    num_epochs 0
     k = 10
     #splits = KFold(n_splits = k, random_state = 42)
     splits = StratifiedShuffleSplit(n_splits = k, test_size = 0.2, random_state = 42)
@@ -386,5 +395,12 @@ if __name__ == '__main__':
     """)'''
     #userIn = int(sys.argv[1])
     #print(userIn)
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("Current Time =", current_time)
     userInput(3)
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print("Current Time =", current_time)
+
 
