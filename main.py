@@ -378,13 +378,13 @@ if __name__ == '__main__':
 
     #Send dataset to function
 
-    print("""
+    '''print("""
     1. Bias Tracking 
     2. Predict for Single Image
     3. Train New Model
     4. Exit
-    """)
-    userIn = int(sys.argv[1])
-    print(userIn)
-    userInput(userIn)
+    """)'''
+    #userIn = int(sys.argv[1])
+    #print(userIn)
+    userInput(3)
 
