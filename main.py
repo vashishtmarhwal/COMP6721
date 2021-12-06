@@ -390,18 +390,18 @@ if __name__ == '__main__':
 
     #Send dataset to function
 
-    '''print("""
+    print("""
     1. Bias Tracking 
     2. Predict for Single Image
     3. Train New Model
     4. Exit
-    """)'''
-    #userIn = int(sys.argv[1])
-    #print(userIn)
+    """)
+    userIn = int(input())
+    print(userIn)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print("Current Time =", current_time)
-    userInput(3)
+    userInput(userIn)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print("Current Time =", current_time)
