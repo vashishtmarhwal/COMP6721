@@ -61,7 +61,6 @@ class convolutional_neural_network(nn.Module):
             nn.BatchNorm2d(256),
             nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2)
-
         )
 
         self.complete_connected_layer = nn.Sequential(
