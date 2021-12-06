@@ -32,49 +32,39 @@ class convolutional_neural_network(nn.Module):
         self.clayer = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
-            nn.ELU(),
+            nn.LeakyReLU(inplace=True),
             nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
-            nn.ELU(),
+            nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
 
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
-            nn.ELU(),
+            nn.LeakyReLU(inplace=True),
             nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
-            nn.ELU(),
+            nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(),
 
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
-            nn.ELU(),
+            nn.LeakyReLU(inplace=True),
             nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
-            nn.ELU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(),
-            
-            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ELU(),
-            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ELU(),
+            nn.LeakyReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2)
 
         )
 
         self.complete_connected_layer = nn.Sequential(
             nn.Dropout(p=0.1),
-            nn.Linear(16384, 1000),
-            nn.ELU(),
+            nn.Linear(37628, 1000),
+            nn.ReLU(inplace=True),
             nn.Linear(1000, 512),
-            nn.ELU(),
+            nn.ReLU(inplace=True),
             nn.Dropout(p=0.1),
             nn.Linear(512, 128),
-            nn.ELU(),
+            nn.ReLU(inplace=True),
             nn.Dropout(p=0.1),
             nn.Linear(128, 4)
         )
@@ -89,7 +79,7 @@ class convolutional_neural_network(nn.Module):
 class ModelTrainer:
     def __init__(self):
         self.model = convolutional_neural_network()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.001)
         self.loss_fn = nn.CrossEntropyLoss()
 
     def validate(self, loader, metric_flag):
@@ -279,8 +269,8 @@ def trainNew():
     dataset = load_data(image_path)
     print("Training a new one")
     torch.manual_seed(42)
-    num_epochs = 10
-    k = 4
+    num_epochs = 30
+    k = 10
     #splits = KFold(n_splits = k, random_state = 42)
     splits = StratifiedShuffleSplit(n_splits = k, test_size = 0.2, random_state = 42)
     kfold_acc = []
@@ -392,18 +382,18 @@ if __name__ == '__main__':
 
     #Send dataset to function
 
-    '''print("""
+    print("""
     1. Bias Tracking 
     2. Predict for Single Image
     3. Train New Model
     4. Exit
-    """)'''
-    #userIn = int(sys.argv[1])
-    #print(userIn)
+    """)
+    userIn = int(input())
+    print(userIn)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print("Current Time =", current_time)
-    userInput(3)
+    userInput(userIn)
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     print("Current Time =", current_time)
